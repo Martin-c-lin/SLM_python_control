@@ -54,40 +54,26 @@ def start_threads():
     slm_thread.start()
     print('SLM thread started')
 
-class control_parameters():
-
-    def __init__():
-        return
 class CreateSLMThread(threading.Thread):
     def __init__(self,threadID,name):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
         self.setDaemon(True)
-        self.xm=[0]
-        self.ym=[0]
-        self.d0x = -115e-6
-        self.d0y = -115e-6
         self.update_xm_ym()
     def update_xm_ym(self):
         global control_parameters
-        self.xm,self.ym = SLM.get_xm_ym_rect(
+        control_parameters['xm'],control_parameters['ym']= SLM.get_xm_ym_rect(
                 nbr_rows=control_parameters['nbr_SLM_rows'],
                 nbr_columns=control_parameters['nbr_SLM_rows'],
                 dx=control_parameters['dx'],
                 dy=control_parameters['dy'],
-                d0x=self.d0x, # TODO make it possible to change this as well
-                d0y=self.d0y)
-    def set_d0x(d0x): # Can this still be done in threads?
-        self.d0x = d0x
-    def set_d0y(d0y):
-        self.d0y = d0y
-    def set_xm_ym(xm,ym):
-        pass
+                d0x=control_parameters['d0x'], 
+                d0y=control_parameters['d0y'])
     def run(self):
         global control_parameters
         self.update_xm_ym()
-        Delta,N,M = SLM.get_delta(xm=self.xm,ym=self.ym )
+        Delta,N,M = SLM.get_delta(xm=control_parameters['xm'],ym=control_parameters['ym'] )
         self.generate_phasemask(Delta,N,M)
         control_parameters['phasemask_updated'] = True
 
@@ -95,7 +81,7 @@ class CreateSLMThread(threading.Thread):
             if control_parameters['new_phasemask']:
                 # Calcualte new delta and phasemask
                 self.update_xm_ym()
-                Delta,N,M = SLM.get_delta(xm=self.xm,ym=self.ym )
+                Delta,N,M = SLM.get_delta(xm=control_parameters['xm'],ym=control_parameters['ym'] )
                 self.generate_phasemask(Delta,N,M)
 
                 # Let the other threads know that a new phasemask has been calculated
@@ -269,7 +255,7 @@ class SLM_window(Frame):
         self.photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(control_parameters['phasemask']))
         del self.img.image
         self.img = Label(self,image=self.photo)
-        self.img.image = self.photo # This ate lots of memory
+        self.img.image = self.photo
         self.img.place(x=420, y=0) # Do not think this is needed
 def change_algorithm():
     if control_parameters['SLM_algorithm'] == 'GSW':
