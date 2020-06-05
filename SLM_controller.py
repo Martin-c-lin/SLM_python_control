@@ -109,7 +109,7 @@ class TkinterDisplay:
          self.window.title(window_title)
 
          # Create a canvas that can fit the above video source size
-         self.window.geometry('300x650')
+         self.window.geometry('500x650')
          self.create_buttons()
          # After it is called once, the update method will be automatically called every delay milliseconds
          self.delay = 200
@@ -126,6 +126,7 @@ class TkinterDisplay:
         except:
             self.new = tkinter.Toplevel(self.window)
             self.SLM_Window = _class(self.new)
+
     def create_buttons(self):
         def get_y_separation(start=50,distance=40):
             index = 0
@@ -137,6 +138,8 @@ class TkinterDisplay:
         separation_entry = tkinter.Entry(self.window,bd=5)
         nbr_trap_rows_entry = tkinter.Entry(self.window,bd=5)
         nbr_trap_columns_entry = tkinter.Entry(self.window,bd=5)
+        d0x_entry = tkinter.Entry(self.window,bd=5)
+        d0y_entry = tkinter.Entry(self.window,bd=5)
         def get_entry(tkinter_entry,type='int'):
             entry = tkinter_entry.get()
             tkinter_entry.delete(0,last=10000)
@@ -157,22 +160,29 @@ class TkinterDisplay:
                 control_parameters['new_phasemask'] = new_mask
             else:
                 print('Value out of bounds')
-        set_iterations = lambda : update_from_entry(iterations_entry,type='int',key='SLM_iterations',bounds=[0,1000])
-        set_particle_separtion = lambda : update_from_entry(separation_entry,type='float',key='trap_separation',bounds=[1,100],scale=1e-6)
-        set_SLM_rows = lambda : update_from_entry(nbr_trap_rows_entry,type='int',key='nbr_SLM_rows',bounds=[0,1000])
-        set_SLM_columns = lambda : update_from_entry(nbr_trap_columns_entry,type='int',key='nbr_SLM_columns',bounds=[0,1000])
-
+        set_iterations = lambda : update_from_entry(iterations_entry, type='int', key='SLM_iterations', bounds=[0,1000])
+        set_particle_separtion = lambda : update_from_entry(separation_entry, type='float', key='trap_separation', bounds=[1,100],scale=1e-6)
+        set_SLM_rows = lambda : update_from_entry(nbr_trap_rows_entry, type='int', key='nbr_SLM_rows', bounds=[0,1000])
+        set_SLM_columns = lambda : update_from_entry(nbr_trap_columns_entry, type='int', key='nbr_SLM_columns',bounds=[0,1000])
+        set_d0x = lambda : update_from_entry(d0x_entry, type='float', key='d0x', bounds=[-200, 200], scale=1e-6)
+        set_d0y = lambda : update_from_entry(d0y_entry, type='float', key='d0y', bounds=[-200, 200], scale=1e-6)
 
         SLM_Iterations_button = tkinter.Button(self.window, text ='Set SLM iterations', command = set_iterations)
         set_separation_button = tkinter.Button(self.window, text ='Set particle separation', command = set_particle_separtion)
         SLM_rows_button = tkinter.Button(self.window, text ='Set SLM rows', command = set_SLM_rows)
         SLM_columns_button = tkinter.Button(self.window, text ='Set SLM columns', command = set_SLM_columns)
+        set_d0x_button = tkinter.Button(self.window, text ='Set d0x', command = set_d0x)
+        set_d0y_button = tkinter.Button(self.window, text ='Set d0y', command = set_d0y)
 
         Choose_algorithm_button = tkinter.Button(self.window, text ='Change algorithm', command = change_algorithm)
         recalculate_mask_button = tkinter.Button(self.window, text ='Recalculate mask', command = recalculate_mask)
         y_position = get_y_separation()
-        x_position = 50
+        y_position_2 = get_y_separation() # for second column
 
+        x_position = 50
+        x_position_2 = 300
+
+        # Column 1
         recalculate_mask_button.place(x=x_position,y=y_position.__next__())
 
         iterations_entry.place(x=x_position,y=y_position.__next__())
@@ -188,6 +198,13 @@ class TkinterDisplay:
         SLM_columns_button.place(x=x_position,y=y_position.__next__())
 
         Choose_algorithm_button.place(x=x_position,y=y_position.__next__())
+
+        # Column 2
+        d0x_entry.place(x=x_position_2,y=y_position_2.__next__())
+        set_d0x_button.place(x=x_position_2,y=y_position_2.__next__())
+
+        d0y_entry.place(x=x_position_2,y=y_position_2.__next__())
+        set_d0y_button.place(x=x_position_2,y=y_position_2.__next__())
 
     def create_indicators(self):
             global control_parameters
