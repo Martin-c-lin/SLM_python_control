@@ -68,7 +68,7 @@ class CreateSLMThread(threading.Thread):
                 nbr_columns=control_parameters['nbr_SLM_rows'],
                 dx=control_parameters['dx'],
                 dy=control_parameters['dy'],
-                d0x=control_parameters['d0x'], 
+                d0x=control_parameters['d0x'],
                 d0y=control_parameters['d0y'])
     def run(self):
         global control_parameters
@@ -109,7 +109,7 @@ class TkinterDisplay:
          self.window.title(window_title)
 
          # Create a canvas that can fit the above video source size
-         self.window.geometry('300x600')
+         self.window.geometry('300x650')
          self.create_buttons()
          # After it is called once, the update method will be automatically called every delay milliseconds
          self.delay = 200
@@ -195,12 +195,12 @@ class TkinterDisplay:
             self.position_label = Label(self.window,text=position_text)
             self.position_label.place(x=10,y=500)
 
-            '''
-            # TODO: Need global access to xm,ym
-            position_text = 'Current trap separation is: ' + str(control_parameters['trap_separation'])
-            self.position_label = Label(self.window,text=position_text)
-            self.position_label.place(x=10,y=500)
-            '''
+
+            setup_text = 'xms are : ' + str(control_parameters['xm'])
+            setup_text += '\n yms are : ' + str(control_parameters['ym'])
+            self.info_label = Label(self.window,text=setup_text)
+            self.info_label.place(x=10,y=570)
+
 
     def update_indicators(self):
         '''
@@ -213,6 +213,11 @@ class TkinterDisplay:
         else:
             position_text += '\n Using Weighted Grechbgerg-Saxton algorithm'
         self.position_label.config(text=position_text)
+
+        setup_text = 'xms are : ' + str(control_parameters['xm'])
+        setup_text += '\n yms are : ' + str(control_parameters['ym'])
+        self.info_label.config(text=setup_text)
+
     def resize_display_image(self,img):
         img_size = np.shape(img)
         #print(img_size)

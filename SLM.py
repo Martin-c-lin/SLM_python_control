@@ -8,6 +8,57 @@ from time import time
 # See if smaller datatypes and upscaling can be used to improve performance
 
 # random mask encoding algorithm  (RM)
+
+def atan2_vec_2d(Y,X):
+    '''
+    Function for calculating atan2 of 2 2d arrays of coordinate positions(X,Y)
+
+    Parameters
+    ----------
+    Y : 2-d array of y coordinates
+    X : 2-d array of x-coordinates
+
+    Returns
+    -------
+    2d-array of same shape as x and y.
+    None if x and y are not of the same shape
+
+    '''
+    shape = np.shape(X)
+
+    if np.shape(X)==np.shape(Y):
+
+        Y = np.reshape(Y,shape[0]*shape[1])
+        X = np.reshape(X,shape[0]*shape[1])
+        res = np.zeros(len(X))
+        for idx in range(len(X)):
+            res[idx] = atan2(Y[idx],X[idx])
+        return np.reshape(res,shape)
+    else:
+        print('Error, vectors not of equal length', len(X),' is not equal to ',len(Y))
+        return None
+
+def get_LGO(image_width=1080,order = -8):
+    '''
+    Parameters
+    ----------
+    image_width : TYPE, optional
+        DESCRIPTION. The default is 1080.
+
+    Returns
+    -------
+    LGO : TYPE
+        LGO, phase shift required to delta to get a laguerre gaussian instead of a gaussian.
+
+    '''
+
+    xc = image_width/2
+    yc = image_width/2
+    xxx,yyy = np.meshgrid(np.linspace(1,image_width,image_width),np.linspace(1,image_width,image_width))
+    LGO = np.mod((order * atan2_vec_2d(yyy-yc,xxx-xc)) ,(2*pi)) # Ther should maybe be a +pi before mod 2pi
+
+    return LGO
+
 def RM(N,M,Delta,image_width):
     return Delta[np.random.randint(0,M,N),range(N)]
 # Random Superposition Algorithm (SR)
@@ -101,7 +152,7 @@ def get_Isaac_xm_ym(d=30e-6):
     ym[1] = d0y+d
 
     return xm,ym
-def get_delta(image_width = 1080,xm=[],ym=[]):
+def get_delta(image_width = 1080,xm=[],ym=[],use_LGO=[False],order=-8):
     """
     Calculates delta in paper. I.e the phase shift of light when travelling from
     the SLM to the trap position for a specific set of points
@@ -121,16 +172,20 @@ def get_delta(image_width = 1080,xm=[],ym=[]):
 
     if len(xm)<1 or len(ym)<1:
         xm,ym = get_default_xm_ym()
+        use_LGO = [False for i in range(len(xm))]
+    if true in use_LGO:
+        LGO = get_LGO(image_width,order=order)
     M = len(xm) # Total number of traps
     zm = np.zeros((M))
     Delta=np.zeros((M,N))
     for m in range(M):
 
-
         # Calculate delta according to eq : in paper
         # Using python "%" instead of Matlabs "rem"
         Delta[m,:]=np.reshape(2*pi*p/lambda_/f*((np.transpose(I)*x*xm[m]+(y*I)*ym[m]) + 1/(2*f)*zm[m] * ( (np.transpose(I)*x)**2 + (y*I)**2 )) % (2*pi),(1,N))
-
+        if len(use_LGO)>m and use_LGO[m]: # TODO, check if this is the way to add this
+            Delta[m,:] += np.reshape(LGO,(1,N))
+            Delta[m,:] = Delta[m,:] % (2*pi)
         # TODO Add z-dependence to to ensuere that this works also in 3d
         # Can we remove the %2pi and * 2 *pi?
     return Delta,N,M
