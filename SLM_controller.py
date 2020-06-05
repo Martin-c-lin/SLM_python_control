@@ -65,7 +65,7 @@ class CreateSLMThread(threading.Thread):
         global control_parameters
         control_parameters['xm'],control_parameters['ym']= SLM.get_xm_ym_rect(
                 nbr_rows=control_parameters['nbr_SLM_rows'],
-                nbr_columns=control_parameters['nbr_SLM_rows'],
+                nbr_columns=control_parameters['nbr_SLM_columns'],
                 dx=control_parameters['dx'],
                 dy=control_parameters['dy'],
                 d0x=control_parameters['d0x'],
@@ -135,7 +135,8 @@ class TkinterDisplay:
                 index += 1
 
         iterations_entry = tkinter.Entry(self.window,bd=5)
-        separation_entry = tkinter.Entry(self.window,bd=5)
+        dx_entry = tkinter.Entry(self.window,bd=5)
+        dy_entry = tkinter.Entry(self.window,bd=5)
         nbr_trap_rows_entry = tkinter.Entry(self.window,bd=5)
         nbr_trap_columns_entry = tkinter.Entry(self.window,bd=5)
         d0x_entry = tkinter.Entry(self.window,bd=5)
@@ -153,7 +154,7 @@ class TkinterDisplay:
             except:
                 print('Cannot perform conversion')
                 return None
-        def update_from_entry(tkinter_entry,key,type='int',bounds=[-np.inf,np.inf],new_mask=True,scale=1):
+        def update_from_entry(tkinter_entry,key,type='int',bounds=[-np.inf,np.inf],new_mask=False,scale=1):
             entry = get_entry(tkinter_entry,type)
             if entry is not None and entry>bounds[0] and entry<bounds[1]:
                 control_parameters[key] = entry*scale
@@ -161,14 +162,18 @@ class TkinterDisplay:
             else:
                 print('Value out of bounds')
         set_iterations = lambda : update_from_entry(iterations_entry, type='int', key='SLM_iterations', bounds=[0,1000])
-        set_particle_separtion = lambda : update_from_entry(separation_entry, type='float', key='trap_separation', bounds=[1,100],scale=1e-6)
+        set_dx = lambda : update_from_entry(dx_entry, type='float', key='dx', bounds=[0,100],scale=1e-6)
+        set_dy = lambda : update_from_entry(dy_entry, type='float', key='dy', bounds=[0,100],scale=1e-6)
+
         set_SLM_rows = lambda : update_from_entry(nbr_trap_rows_entry, type='int', key='nbr_SLM_rows', bounds=[0,1000])
         set_SLM_columns = lambda : update_from_entry(nbr_trap_columns_entry, type='int', key='nbr_SLM_columns',bounds=[0,1000])
         set_d0x = lambda : update_from_entry(d0x_entry, type='float', key='d0x', bounds=[-200, 200], scale=1e-6)
         set_d0y = lambda : update_from_entry(d0y_entry, type='float', key='d0y', bounds=[-200, 200], scale=1e-6)
 
         SLM_Iterations_button = tkinter.Button(self.window, text ='Set SLM iterations', command = set_iterations)
-        set_separation_button = tkinter.Button(self.window, text ='Set particle separation', command = set_particle_separtion)
+        set_dx_button = tkinter.Button(self.window, text ='Set particle separation -x ', command = set_dx)
+        set_dy_button = tkinter.Button(self.window, text ='Set particle separation -y ', command = set_dy)
+
         SLM_rows_button = tkinter.Button(self.window, text ='Set SLM rows', command = set_SLM_rows)
         SLM_columns_button = tkinter.Button(self.window, text ='Set SLM columns', command = set_SLM_columns)
         set_d0x_button = tkinter.Button(self.window, text ='Set d0x', command = set_d0x)
@@ -188,8 +193,11 @@ class TkinterDisplay:
         iterations_entry.place(x=x_position,y=y_position.__next__())
         SLM_Iterations_button.place(x=x_position,y=y_position.__next__())
 
-        separation_entry.place(x=x_position,y=y_position.__next__())
-        set_separation_button.place(x=x_position,y=y_position.__next__())
+        dx_entry.place(x=x_position,y=y_position.__next__())
+        set_dx_button.place(x=x_position,y=y_position.__next__())
+
+        dy_entry.place(x=x_position,y=y_position.__next__())
+        set_dy_button.place(x=x_position,y=y_position.__next__())
 
         nbr_trap_rows_entry.place(x=x_position,y=y_position.__next__())
         SLM_rows_button.place(x=x_position,y=y_position.__next__())
@@ -197,7 +205,7 @@ class TkinterDisplay:
         nbr_trap_columns_entry.place(x=x_position,y=y_position.__next__())
         SLM_columns_button.place(x=x_position,y=y_position.__next__())
 
-        Choose_algorithm_button.place(x=x_position,y=y_position.__next__())
+
 
         # Column 2
         d0x_entry.place(x=x_position_2,y=y_position_2.__next__())
@@ -206,6 +214,7 @@ class TkinterDisplay:
         d0y_entry.place(x=x_position_2,y=y_position_2.__next__())
         set_d0y_button.place(x=x_position_2,y=y_position_2.__next__())
 
+        Choose_algorithm_button.place(x=x_position_2,y=y_position_2.__next__())
     def create_indicators(self):
             global control_parameters
             position_text = 'Current trap separation is: ' + str(control_parameters['trap_separation'])
@@ -223,7 +232,7 @@ class TkinterDisplay:
         '''
         Helper function for updating on-screen indicators
         '''
-        position_text = 'Current trap separation is: ' + str(control_parameters['trap_separation'])
+        position_text = 'Current dx is: ' + str(control_parameters['dx'])+'  Current dy is: ' + str(control_parameters['dy'])
         position_text += '\n Number of iterations set to: ' +str(control_parameters['SLM_iterations'])
         if control_parameters['SLM_algorithm'] == 'GS':
             position_text += '\n Using Grechbgerg-Saxton algorithm'

@@ -75,11 +75,11 @@ def GSW(N,M,Delta=None,image_width=1080,nbr_iterations=30):
     I_N = np.uint8(np.ones((1,N)))
     Delta_J = np.exp(1j*Delta)
     for J in range(nbr_iterations):
-        V = np.reshape(np.mean((np.exp(1j*(I_m*Phi)-Delta)),axis=1),(M,1)) # axis = 0
+        V = np.reshape(np.mean((np.exp(1j*(I_m*Phi)-Delta)),axis=1),(M,1))
         V_abs = abs(V)
         W = np.mean(V_abs)*np.divide(W,V_abs)
-        Phi = np.angle(sum(np.multiply(Delta_J, np.divide(np.multiply(W,V),V_abs)*I_N))) # axis = 0
-        print('Iteration: ',J)
+        Phi = np.angle(sum(np.multiply(Delta_J, np.divide(np.multiply(W,V),V_abs)*I_N)))
+        print('Iteration: ', J+1, 'of ', nbr_iterations)
 
     return np.reshape(128+Phi*255/(2*pi),(image_width,image_width))
 def  GS(N,M,Delta=None,image_width=1080,nbr_iterations=30):
@@ -93,16 +93,13 @@ def  GS(N,M,Delta=None,image_width=1080,nbr_iterations=30):
     for J in range(nbr_iterations):
         V = np.reshape( np.transpose( np.mean((np.exp(1j*(I_m*Phi)-Delta)),axis=1) ),(M,1))
         Phi = np.angle(sum(np.multiply(Delta_J,np.divide(V,abs(V)))*I_N ))
-        print(J)
+        print('Iteration: ', J+1, 'of ', nbr_iterations)
     result = np.reshape(128+Phi*255/(2*pi),(image_width,image_width))
-    #print(np.min(result),np.max(result))
-    #result = result- np.min(result)
-    #result = result*(255/np.max(result))
-    print(np.min(result),np.max(result))
-    return  result#np.reshape(128+Phi*255/(2*pi),(image_width,image_width))#np.reshape(128+Phi*255/(2*pi),(image_width,image_width))
+    return  result
 def get_default_xm_ym():
     '''
-    Generates default x,y positions for particle
+    Generates default x,y positions for particle.
+    Legacy funciton, use get_xm_ym_rect instead
     '''
     M = 9 # Changed to 9 from 16
     xm = np.zeros((M))
@@ -117,11 +114,9 @@ def get_default_xm_ym():
         xm[i*fac+0] = d0x-d/2
         xm[i*fac+1] = d0x
         xm[i*fac+2] = d0x+d/2
-        #xm[i*fac+3] = d0x+d
         ym[i*fac+0] = d0y+d/2*(i-1)
         ym[i*fac+1] = d0y+d/2*(i-1)
         ym[i*fac+2] = d0y+d/2*(i-1)
-        #ym[i*fac+3] = d0y+d/2*(i-1)
 
     return xm,ym
 def get_xm_ym_rect(nbr_rows,nbr_columns, dx=30e-6,dy=30e-6, d0x=-115e-6, d0y=-115e-6):
@@ -136,7 +131,7 @@ def get_xm_ym_rect(nbr_rows,nbr_columns, dx=30e-6,dy=30e-6, d0x=-115e-6, d0y=-11
     for i in range(nbr_rows):
         for j in range(nbr_columns):
             xm[i*nbr_columns+j] = d0x + dx*j
-            ym[i*nbr_columns+j] = d0x + dy*i
+            ym[i*nbr_columns+j] = d0y + dy*i
     return xm,ym
 
 def get_Isaac_xm_ym(d=30e-6):
@@ -187,12 +182,12 @@ def get_delta(image_width = 1080,xm=[],ym=[],use_LGO=[False],order=-8):
             Delta[m,:] += np.reshape(LGO,(1,N))
             Delta[m,:] = Delta[m,:] % (2*pi)
         # TODO Add z-dependence to to ensuere that this works also in 3d
-        # Can we remove the %2pi and * 2 *pi?
     return Delta,N,M
 def setup_fullscreen_plt_image():
     '''
     This script magically sets up pyplot lib so it displays an image on a secondary display
     in full screen.
+    Legacy function. USe the SLM_controller script with tkinter windows instead
     '''
     plt.switch_backend('QT4Agg')
 
@@ -205,7 +200,6 @@ def setup_fullscreen_plt_image():
     # hack end
 
     plt.figure()
-    #plt.imshow(image,cmap='gist_gray')
     plt.rcParams['toolbar'] = 'None'
     fig = plt.gcf()
     fig.canvas.window().statusBar().setVisible(False)
