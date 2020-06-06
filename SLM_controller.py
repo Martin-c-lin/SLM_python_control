@@ -32,6 +32,7 @@ def get_default_control_parameters(
         'dy':20e-6,
         'nbr_SLM_rows':2,
         'nbr_SLM_columns':1,
+        'use_LGO':[True]
     }
     control_parameters['phasemask'] = np.zeros((control_parameters['phasemask_height'],control_parameters['phasemask_width']))
 
@@ -71,10 +72,11 @@ class CreateSLMThread(threading.Thread):
                 dy=control_parameters['dy'],
                 d0x=control_parameters['d0x'],
                 d0y=control_parameters['d0y'])
+        control_parameters['use_LGO'] = [True for x in control_parameters['xm']]
     def run(self):
         global control_parameters
         self.update_xm_ym()
-        Delta,N,M = SLM.get_delta(xm=control_parameters['xm'],ym=control_parameters['ym'] )
+        Delta,N,M = SLM.get_delta(xm=control_parameters['xm'], ym=control_parameters['ym'], use_LGO=control_parameters['use_LGO'])
         self.generate_phasemask(Delta,N,M)
         control_parameters['phasemask_updated'] = True
 
@@ -82,7 +84,7 @@ class CreateSLMThread(threading.Thread):
             if control_parameters['new_phasemask']:
                 # Calcualte new delta and phasemask
                 self.update_xm_ym()
-                Delta,N,M = SLM.get_delta(xm=control_parameters['xm'],ym=control_parameters['ym'] )
+                Delta,N,M = SLM.get_delta(xm=control_parameters['xm'], ym=control_parameters['ym'], use_LGO=control_parameters['use_LGO'])
                 self.generate_phasemask(Delta,N,M)
 
                 # Let the other threads know that a new phasemask has been calculated
@@ -92,9 +94,11 @@ class CreateSLMThread(threading.Thread):
     def generate_phasemask(self,Delta,N,M):
         global control_parameters
         if control_parameters['SLM_algorithm'] == 'GSW':
-            control_parameters['phasemask'] = SLM.GSW(N,M,Delta,nbr_iterations=control_parameters['SLM_iterations'])
+            control_parameters['phasemask'] = SLM.GSW(N, M, Delta,
+                nbr_iterations=control_parameters['SLM_iterations'])
         elif control_parameters['SLM_algorithm'] == 'GS':
-            control_parameters['phasemask'] = SLM.GS(N,M,Delta,nbr_iterations=control_parameters['SLM_iterations'])
+            control_parameters['phasemask'] = SLM.GS(N, M, Delta,
+                nbr_iterations=control_parameters['SLM_iterations'])
 
 
     def calculate_trap_position():
@@ -236,7 +240,7 @@ class TkinterDisplay:
         '''
         Helper function for updating on-screen indicators
         '''
-        position_text = 'Current dx is: ' + str(control_parameters['dx'])+'  Current dy is: ' + str(control_parameters['dy'])
+        position_text = 'Current dx is: ' + str(control_parameters['dx']*1e6)+'  Current dy is: ' + str(control_parameters['dy']*1e6)
         position_text += '\n Number of iterations set to: ' +str(control_parameters['SLM_iterations'])
         if control_parameters['SLM_algorithm'] == 'GS':
             position_text += '\n Using Grechbgerg-Saxton algorithm'
