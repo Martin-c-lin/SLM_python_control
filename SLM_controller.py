@@ -6,6 +6,7 @@ from tkinter import messagebox
 from tkinter import *
 from functools import partial
 import PIL.Image, PIL.ImageTk
+from tkinter.ttk import *
 import SLM
 def get_default_control_parameters(
     SLM_iterations = 30,
@@ -126,7 +127,13 @@ class TkinterDisplay:
         except:
             self.new = tkinter.Toplevel(self.window)
             self.SLM_Window = _class(self.new)
-
+    def create_algorithm_selection(self, x_pos, y_pos):
+        self.selected_algorithm = StringVar()
+        self.selected_algorithm.set('GSW')
+        self.gsw_button = Radiobutton(self.window, text='GSW', value='GSW', variable=self.selected_algorithm)
+        self.gs_button = Radiobutton(self.window, text='GS', value='GS', variable=self.selected_algorithm)
+        self.gsw_button.place(x=x_pos, y=y_pos)
+        self.gs_button.place(x=x_pos+50, y=y_pos)
     def create_buttons(self):
         def get_y_separation(start=50,distance=40):
             index = 0
@@ -179,7 +186,6 @@ class TkinterDisplay:
         set_d0x_button = tkinter.Button(self.window, text ='Set d0x', command = set_d0x)
         set_d0y_button = tkinter.Button(self.window, text ='Set d0y', command = set_d0y)
 
-        Choose_algorithm_button = tkinter.Button(self.window, text ='Change algorithm', command = change_algorithm)
         recalculate_mask_button = tkinter.Button(self.window, text ='Recalculate mask', command = recalculate_mask)
         y_position = get_y_separation()
         y_position_2 = get_y_separation() # for second column
@@ -205,8 +211,6 @@ class TkinterDisplay:
         nbr_trap_columns_entry.place(x=x_position,y=y_position.__next__())
         SLM_columns_button.place(x=x_position,y=y_position.__next__())
 
-
-
         # Column 2
         d0x_entry.place(x=x_position_2,y=y_position_2.__next__())
         set_d0x_button.place(x=x_position_2,y=y_position_2.__next__())
@@ -214,7 +218,7 @@ class TkinterDisplay:
         d0y_entry.place(x=x_position_2,y=y_position_2.__next__())
         set_d0y_button.place(x=x_position_2,y=y_position_2.__next__())
 
-        Choose_algorithm_button.place(x=x_position_2,y=y_position_2.__next__())
+        self.create_algorithm_selection(x_position_2, y_position_2.__next__())
     def create_indicators(self):
             global control_parameters
             position_text = 'Current trap separation is: ' + str(control_parameters['trap_separation'])
@@ -258,6 +262,8 @@ class TkinterDisplay:
     def update(self):
          # Get a frame from the video source
          self.update_indicators()
+         control_parameters['SLM_algorithm'] = self.selected_algorithm.get()
+
          if control_parameters['phasemask_updated']:
              self.SLM_Window.update()
              control_parameters['phasemask_updated'] = False
@@ -288,11 +294,7 @@ class SLM_window(Frame):
         self.img = Label(self,image=self.photo)
         self.img.image = self.photo
         self.img.place(x=420, y=0) # Do not think this is needed
-def change_algorithm():
-    if control_parameters['SLM_algorithm'] == 'GSW':
-        control_parameters['SLM_algorithm'] = 'GS'
-    else:
-        control_parameters['SLM_algorithm'] = 'GSW'
+
 def recalculate_mask():
     control_parameters['new_phasemask'] = True
 if __name__ == '__main__':
