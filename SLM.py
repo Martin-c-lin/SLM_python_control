@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from math import ceil,pi
 from random import random
 from time import time
+from math import atan2
 # TODO make all this into functions and investigate if we can change to smaller
 # datatypes to improve performance
 # See if smaller datatypes and upscaling can be used to improve performance
@@ -179,7 +180,7 @@ def get_delta(image_width = 1080,xm=[],ym=[],use_LGO=[False],order=-8):
         # Using python "%" instead of Matlabs "rem"
         Delta[m,:]=np.reshape(2*pi*p/lambda_/f*((np.transpose(I)*x*xm[m]+(y*I)*ym[m]) + 1/(2*f)*zm[m] * ( (np.transpose(I)*x)**2 + (y*I)**2 )) % (2*pi),(1,N))
         if len(use_LGO)>m and use_LGO[m]: # TODO, check if this is the way to add this
-            Delta[m,:] += np.reshape(LGO,(1,N))
+            Delta[m,:] += np.reshape(LGO,(N))
             Delta[m,:] = Delta[m,:] % (2*pi)
         # TODO Add z-dependence to to ensuere that this works also in 3d
     return Delta,N,M
