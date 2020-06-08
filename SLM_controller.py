@@ -72,7 +72,7 @@ class CreateSLMThread(threading.Thread):
                 dy=control_parameters['dy'],
                 d0x=control_parameters['d0x'],
                 d0y=control_parameters['d0y'])
-        control_parameters['use_LGO'] = [True for x in control_parameters['xm']]
+        #control_parameters['use_LGO'] = [True for x in control_parameters['xm']]
     def run(self):
         global control_parameters
         self.update_xm_ym()
@@ -138,6 +138,17 @@ class TkinterDisplay:
         self.gs_button = Radiobutton(self.window, text='GS', value='GS', variable=self.selected_algorithm)
         self.gsw_button.place(x=x_pos, y=y_pos)
         self.gs_button.place(x=x_pos+50, y=y_pos)
+
+
+    def create_LGO_selection(self, x_pos, y_pos):
+        self.toggle_LGO = BooleanVar()
+        self.toggle_LGO.set(False)
+        self.LGO_on_button = Radiobutton(self.window, text='LGO on', value=True, variable=self.toggle_LGO)
+        self.LGO_off_button = Radiobutton(self.window, text='LGO off', value=False, variable=self.toggle_LGO)
+        self.LGO_on_button.place(x=x_pos, y=y_pos)
+        self.LGO_off_button.place(x=x_pos+80, y=y_pos)
+
+
     def create_buttons(self):
         def get_y_separation(start=50,distance=40):
             index = 0
@@ -223,6 +234,8 @@ class TkinterDisplay:
         set_d0y_button.place(x=x_position_2,y=y_position_2.__next__())
 
         self.create_algorithm_selection(x_position_2, y_position_2.__next__())
+        self.create_LGO_selection(x_position_2, y_position_2.__next__())
+
     def create_indicators(self):
             global control_parameters
             position_text = 'Current trap separation is: ' + str(control_parameters['trap_separation'])
@@ -267,7 +280,11 @@ class TkinterDisplay:
          # Get a frame from the video source
          self.update_indicators()
          control_parameters['SLM_algorithm'] = self.selected_algorithm.get()
-
+         control_parameters['use_LGO'] = [self.toggle_LGO.get()]
+         # if self.toggle_LGO.get():
+         #     print('LGO on')
+         # else:
+         #     print('LGO off')
          if control_parameters['phasemask_updated']:
              self.SLM_Window.update()
              control_parameters['phasemask_updated'] = False
